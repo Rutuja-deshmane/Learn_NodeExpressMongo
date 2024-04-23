@@ -1,0 +1,5 @@
+Closes
+the file handle
+after waiting for any
+pending operation on the 
+handle to complete.
