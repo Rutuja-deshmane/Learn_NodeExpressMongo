@@ -11,80 +11,59 @@ const products = data.products;
 // mostly its used for post request to get the data from the body
 server.use(express.json());
 
-//Third-party middleware
-//morgan is a HTTP request logger middleware for node.js
-//server.use(morgan("default"));
-
-server.use(morgan("tiny"));
-
-//static middlewaare for serving static files
-//express.static serves static assets such as HTML files, images, and so on.
-server.use(express.static("public"));
-
-//express.urlencoded parses incoming requests with URL-encoded payloads.
-//server.use(express.urlencoded({ extended: true }));
-
-//custom middleware
-//like this Api mostlly used for Logger
-/*server.use((req, res, next) => {
-  console.log(req.method, req.hostname, new Date(), req.get("Sec-Fetch-Dest"));
-  next();
-});*/
-
-// middelware for Authentication
-const auth = (req, res, next) => {
-  console.log(req.query);
-  if (req.query.password == "123") {
-    next();
-  } else {
-    res.sendStatus(401);
-  }
-};
-
-// middelware for Authentication get the data from the body
-const auth_b = (req, res, next) => {
-  if (req.body.password == "123") {
-    next();
-  } else {
-    res.sendStatus(401);
-  }
-};
-
-//server.use(auth);
-
 //create API
+// product DB used that stored in data.json
 
-//params is use for access particular data or id
+// create product
+
+server.post("/products", (req, res) => {
+  const product = products.push(req.body);
+  res.json(req.body);
+});
+
+//Read products
+server.get("/products", (req, res) => {
+  res.json(products);
+});
+
+//get product by id
 server.get("/product/:id", (req, res) => {
-  console.log(req.params);
-  res.json({ type: "GET" });
+  const product = products.find((product) => product.id === +req.params.id);
+
+  res.json(product);
 });
 
-server.get("/", auth, (req, res) => {
-  res.json({ type: "GET" });
+//get product by title
+server.get("/product/title/:title", (req, res) => {
+  const product = products.find(
+    (product) => product.title === req.params.title
+  );
+  res.json(product);
 });
 
-server.post("/", auth_b, (req, res) => {
-  res.json({ type: "POST" });
+//update product
+server.put("/products/:id", (req, res) => {
+  const id = +req.params.id;
+  const productIndex = products.findIndex((product) => product.id === +id);
+  products.splice(productIndex, 1, { ...req.body, id: id });
+  res.status(201).json(req.body);
 });
 
-server.put("/", (req, res) => {
-  res.json({ type: "PUT" });
+//update product using patch
+//patch update particular field
+server.patch("/product/:id", (req, res) => {
+  const id = +req.params.id;
+  const productIndex = products.findIndex((product) => product.id === +id);
+  const product = products[productIndex];
+  products.splice(productIndex, 1, { ...product, ...req.body });
+  res.status(201).json(req.body);
 });
 
-server.delete("/", (req, res) => {
-  res.json({ type: "DELETE" });
-});
-
-server.patch("/", (req, res) => {
-  res.json({ type: "PATCH" });
-});
-
-server.get("/try", (req, res) => {
-  //res.sendStatus(404);
-  //res.json(products);
-  //res.send("<h1>hello<h1>");
-  //res.sendFile("/Learn_NodeExpressMongo/index.html");
+server.delete("/product/:id", (req, res) => {
+  const id = +req.params.id;
+  const productIndex = products.findIndex((product) => product.id === +id);
+  products.splice(productIndex, 1);
+  res.status(201).json(productIndex);
 });
 
 server.listen(8080, () => {
